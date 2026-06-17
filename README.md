@@ -54,7 +54,9 @@ ORDER BY avg_grade DESC, track ASC, year ASC, period ASC
 LIMIT 10;
 
 Q7 — Software Engineering students and their city
-sqlSELECT s.student_epita_email,
+
+sql
+SELECT s.student_epita_email,
        c.contact_last_name,
        c.contact_first_name,
        c.contact_city
@@ -65,10 +67,14 @@ ORDER BY c.contact_last_name, c.contact_first_name, s.student_epita_email
 LIMIT 10;
 
 Q8 — Distinct contact cities
-sqlSELECT DISTINCT contact_city FROM contacts ORDER BY contact_city LIMIT 10;
+
+sql
+SELECT DISTINCT contact_city FROM contacts ORDER BY contact_city LIMIT 10;
 
 Q9 — Students above the global average
-sqlWITH student_avg AS (
+
+sql
+WITH student_avg AS (
     SELECT grade_student_epita_email_ref AS student, AVG(grade_score) AS avg_score
     FROM grades
     GROUP BY grade_student_epita_email_ref
@@ -83,7 +89,9 @@ ORDER BY sa.avg_score DESC, sa.student ASC
 LIMIT 10;
 
 Q10 — Top 2 students of each course
-sqlWITH student_course_avg AS (
+
+sql
+WITH student_course_avg AS (
     SELECT g.grade_course_code_ref AS course_code,
            g.grade_course_rev_ref AS course_rev,
            g.grade_student_epita_email_ref AS student,
@@ -103,7 +111,9 @@ ORDER BY co.course_name, r.rnk, r.student
 LIMIT 10;
 
 Q11 — Attendance rate per course
-sqlSELECT co.course_name,
+
+sql
+SELECT co.course_name,
        COUNT(*) AS nb_records,
        ROUND(100.0 * SUM(a.attendance_presence) / COUNT(*), 2) AS attendance_rate
 FROM attendance a
@@ -114,7 +124,9 @@ ORDER BY attendance_rate DESC, co.course_name ASC
 LIMIT 10;
 
 Q12 — Prospective (selected) students
-sqlSELECT student_epita_email,
+
+sql
+SELECT student_epita_email,
        student_population_code_ref AS track,
        student_population_year_ref AS year
 FROM students
@@ -123,7 +135,9 @@ ORDER BY student_epita_email ASC
 LIMIT 10;
 
 Q13 — Best-scoring course of each department
-sqlWITH course_avg AS (
+
+sql
+WITH course_avg AS (
     SELECT co.course_code, co.course_rev, co.course_name, co.course_dept_ref,
            AVG(g.grade_score) AS avg_score
     FROM grades g
@@ -141,27 +155,35 @@ WHERE r.rnk = 1
 ORDER BY avg_score DESC, d.dept_name ASC;
 
 Q14 — Courses with their department name
-sqlSELECT co.course_code, co.course_rev, co.course_name, d.dept_name
+
+sql
+SELECT co.course_code, co.course_rev, co.course_name, d.dept_name
 FROM courses co
 JOIN departments d ON d.dept_code = co.course_dept_ref
 ORDER BY co.course_name, co.course_code, co.course_rev
 LIMIT 10;
 
 Q15 — Exams per type
-sqlSELECT exam_type, COUNT(*) AS nb_exams
+
+sql
+SELECT exam_type, COUNT(*) AS nb_exams
 FROM exams
 GROUP BY exam_type
 ORDER BY nb_exams DESC, exam_type ASC;
 
 Q16 — Course and teacher count per department
-sqlSELECT d.dept_name,
+
+sql
+SELECT d.dept_name,
        (SELECT COUNT(*) FROM courses co WHERE co.course_dept_ref = d.dept_code) AS nb_courses,
        (SELECT COUNT(*) FROM teachers t WHERE t.teacher_dept_ref = d.dept_code) AS nb_teachers
 FROM departments d
 ORDER BY nb_courses DESC, d.dept_name ASC;
 
 Q17 — Sessions per room
-sqlSELECT r.room_code, COUNT(s.session_room_ref) AS nb_sessions
+
+sql
+SELECT r.room_code, COUNT(s.session_room_ref) AS nb_sessions
 FROM rooms r
 LEFT JOIN sessions s ON s.session_room_ref = r.room_code
 GROUP BY r.room_code
@@ -169,7 +191,8 @@ ORDER BY nb_sessions DESC, r.room_code ASC
 LIMIT 10;
 
 Q18 — Full prerequisite chain (transitive closure)
-sqlWITH RECURSIVE prereq_chain AS (
+sql
+WITH RECURSIVE prereq_chain AS (
     SELECT course_code_ref AS course_code, course_rev_ref AS course_rev,
            prereq_course_code_ref AS prereq_code, prereq_course_rev_ref AS prereq_rev,
            1 AS steps
@@ -188,7 +211,8 @@ ORDER BY course_code, steps, prereq_code
 LIMIT 10;
 
 Q19 — Grade-band breakdown per course
-sqlSELECT co.course_name,
+sql
+SELECT co.course_name,
        SUM(CASE WHEN g.grade_score < 10 THEN 1 ELSE 0 END) AS below_10,
        SUM(CASE WHEN g.grade_score >= 10 AND g.grade_score <= 13 THEN 1 ELSE 0 END) AS from_10_to_13,
        SUM(CASE WHEN g.grade_score >= 14 THEN 1 ELSE 0 END) AS at_least_14,
@@ -200,7 +224,8 @@ ORDER BY total DESC, co.course_name ASC
 LIMIT 10;
 
 Q20 — Attendance rate vs average grade
-sqlWITH att AS (
+sql
+WITH att AS (
     SELECT attendance_student_ref AS student,
            100.0 * SUM(attendance_presence) / COUNT(*) AS att_rate
     FROM attendance
@@ -219,13 +244,15 @@ ORDER BY attendance_rate DESC, avg_grade DESC, gr.student ASC
 LIMIT 10;
 
 Q21 — AI-department courses, longest first
-sqlSELECT course_code, course_name, duration
+sql
+SELECT course_code, course_name, duration
 FROM courses
 WHERE course_dept_ref = 'AI'
 ORDER BY duration DESC, course_code ASC;
 
 Q22 — Top Project marks (above 15)
-sqlSELECT g.grade_student_epita_email_ref AS student,
+sql
+SELECT g.grade_student_epita_email_ref AS student,
        co.course_name,
        g.grade_score
 FROM grades g
